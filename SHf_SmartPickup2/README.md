@@ -64,6 +64,11 @@ Log lines are prefixed with `[SHf_SmartPickup2]`.
   animation by writing `LastUseConsumableID` directly (`Consumables.useById`): the use ability reads
   only that field. If the write does not take, the log says so and the effect is applied directly as
   before. `EquipConsumable(ID, slot)` / `UnequipConsumable(slot)` remain the fallback plan.
+* Mods restarted (UE4SS hot reload, Ctrl+R, on by default in UE4SS) while the use animation runs:
+  the pickup hidden for the animation (`hidePickup`) is never shown again and the stack taken out by
+  the slot guard is not put back, since the module state that would do it is gone. Suspected, not
+  observed — see TESTPLAN 38b. Accepted for the stack (see "Freed consumable slot"). For the pickup:
+  showing every hidden pickup would also reveal the ones the game hid itself (`HideMe`).
 
 ## Pickup during the animation
 
@@ -71,17 +76,19 @@ While the game's use animation runs the pickup is hidden the way the game itself
 (`HideMe` / `ShowMe` in `BP_Interact_Pickup`): trigger box off, actor hidden, hint areas off. It is
 shown again on every exit that leaves it on the ground (use interrupted, the new one does not fit).
 
-## Borrowed consumable slot
+## Freed consumable slot
 
 For an item that is not carried, the animated use needs it in the inventory, which is full. The mod
-raises the consumable slot count by one, adds the unit, lets the game use it and puts the count back
-once the game's `UseConsumable` has fired (`Scripts/game/slot_guard.lua`). While a slot is borrowed
-the original count is stored in `slotcount.pending` next to this file. If that file still exists when
-the mod starts, something was interrupted: the log says so and **F8** in game restores the count.
+takes one stack out for about a second (the only stack of its ID, outside the quick slots if possible,
+the smallest), adds the unit, lets the game use it and puts the stack back
+(`Scripts/game/slot_guard.lua`). The slot count, which is part of the save game, is not changed.
 
-`SetConsumableSlotNum(n)` truncates the stack array to `n` entries. After the game's own
-`UseConsumable` the emptied entry is sorted to the end and the truncation drops just that; after
-`RemoveConsumable` from Lua (an interrupted use) the emptied entry stays in place and the last real
-stack is dropped instead (measured 2026-10-28 11:05). The guard keeps the totals from before the
-borrow and adds back whatever is missing after the shrink, logging `slot guard: the shrink dropped
-N x <item> ..., added back`. The raw stack lists around the shrink are in the debug log.
+The put-back compares totals, so a save loaded during the animation does not duplicate the stack.
+Should the stack not fit back, it is dropped on the ground. When no stack qualifies the effect is
+applied directly, without the animation.
+
+There is no marker file, on purpose. A crash loses nothing, because the save on disk still has the
+stack. The one real loss needs a save inside that second, followed by loading that save (or a hot
+reload of the mods during the animation). Every game save is logged (`game save: ...` at debug level),
+and one that hits this window gives a WARN `game save (...) while N x <item> is out of the inventory`.
+If that shows up in real play, a marker can be added then.

@@ -28,9 +28,8 @@
 local scriptDir = ((debug and debug.getinfo(1, "S").source) or ""):match("^@?(.*[\\/])") or ""
 package.path = scriptDir .. "?.lua;.\\Mods\\SHf_SmartPickup2\\Scripts\\?.lua;" .. package.path
 
-local Log       = require("core.log")
-local Hooks     = require("core.hooks")
-local SlotGuard = require("game.slot_guard")
+local Log   = require("core.log")
+local Hooks = require("core.hooks")
 
 ------------------------------------------------------------------------------
 -- Configuration
@@ -59,21 +58,6 @@ end
 ------------------------------------------------------------------------------
 Log.configure({ prefix = "[SHf_SmartPickup2]", debug = Config.Debug })
 Log.info("loading")
-
--- a consumable slot borrowed for an animated use is recorded here until it is given back;
--- if the record survives a restart something was interrupted: F8 puts the slot count back
-SlotGuard.configure((scriptDir ~= "" and scriptDir or ".\\Mods\\SHf_SmartPickup2\\Scripts\\") .. "..\\slotcount.pending")
-if SlotGuard.pendingCount() then
-    Log.warn("a borrowed consumable slot was not given back last time (stored count %d): press F8 in game to restore it",
-        SlotGuard.pendingCount())
-end
-RegisterKeyBind(Key.F8, {}, function()
-    ExecuteInGameThread(function()
-        local inv = require("game.inventory").get()
-        if not inv then Log.warn("F8: no inventory"); return end
-        if not SlotGuard.restorePending(inv) then Log.info("F8: nothing to restore") end
-    end)
-end)
 
 require("features.weapon_replace").install(Config)
 require("features.durability_restore").install(Config)

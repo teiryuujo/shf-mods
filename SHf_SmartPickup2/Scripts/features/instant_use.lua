@@ -28,9 +28,9 @@
                    opens if it still does not fit). If the ability cannot be started, or the game
                    does not get there in time: UseConsumable(id) removes one and the effects are
                    applied through the ability system (UseConsumable alone changes no attribute).
-        case B  not carried -> one consumable slot is borrowed (game/slot_guard.lua), one unit is
-                added, the game's use ability plays the animation and removes it, the slot is given
-                back and HandlePickupSuccess consumes the pickup. If the ability cannot be started:
+        case B  not carried -> one stack is taken out for a moment (game/slot_guard.lua), one unit
+                is added, the game's use ability plays the animation and removes it, the stack is
+                put back and HandlePickupSuccess consumes the pickup. If the ability cannot be started:
                 the effects are applied through the ability system (repair kit: the weapon in hand),
                 then HandlePickupSuccess consumes the pickup.
 --]]
@@ -236,15 +236,16 @@ local function consumeDirectly(self, inv, ps, offer)
     end
 end
 
---- Case B with the animation: one slot is borrowed, the unit is added, the game uses it (and removes
---- it on its notify), the slot is given back and the ground pickup is consumed.
+--- Case B with the animation: one stack is taken out, the unit is added, the game uses it (and removes
+--- it on its notify), the stack is put back and the ground pickup is consumed.
 local function consumeWithAnimation(self, inv, ps, offer, slot)
     local id = offer.id
     local idIndex = nil
     for i, n in ipairs(Inventory.consumableNames(inv)) do
         if n == id then idIndex = i - 1 end
     end
-    local release = idIndex and SlotGuard.borrowSlotFor(inv, id, idIndex)
+    local loc, rot = Util.actorLocRot(self)
+    local release = idIndex and SlotGuard.borrowSlotFor(inv, id, idIndex, loc, rot)
     if not release then
         consumeDirectly(self, inv, ps, offer)
         return
@@ -258,7 +259,7 @@ local function consumeWithAnimation(self, inv, ps, offer, slot)
             Log.info("Used %s on pickup through the game's animation", id)
         end,
         interrupted = function()
-            release(true)                        -- take the unit back out, give the slot back; the pickup stays
+            release(true)                        -- take the unit back out, put the stack back; the pickup stays
             releasePickup(self)
         end,
     })
@@ -389,6 +390,7 @@ function M.install(cfg)
     if cfg.UseGameAnimation then
         Hooks.on(Const.INVENTORY_COMPONENT .. ":UseConsumable", { post = onUseConsumable })
         Hooks.on(Const.USE_ABILITY_BP .. ":K2_OnEndAbility",    { pre = onUseAbilityEnd })
+        SlotGuard.installSaveWatch()
     end
     if cfg.ConfirmInstantUse then Dialog.prepare() end
     Log.info("feature 4 (instant use, mode %s, confirm %s, animation %s) installed",

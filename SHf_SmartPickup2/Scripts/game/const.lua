@@ -15,6 +15,14 @@ return {
     -- the ability that plays the item-use animation and calls UseConsumable on its notify
     USE_ABILITY_BP          = "/Game/Character/Player/Base/GameplayAbility/Ability/GA_UseShortcutItem.GA_UseShortcutItem_C",
 
+    -- where a game save can be seen (manual, automatic, temporary, the analytics handler of any slot save)
+    SAVE_FUNCTIONS          = {
+        "/Script/GameNoce.NoceSaveSubsystem:SaveGameData_BP",
+        "/Script/GameNoce.NoceSaveSubsystem:AutoSaveGameData_BP",
+        "/Script/GameNoce.NoceSaveSubsystem:MakeTemporarySaveGameData",
+        "/Script/GameNoce.NoceAnalyticsInstance:OnSaveGameSlot",
+    },
+
     -- function libraries (class default objects)
     INVENTORY_FUNCLIB       = "/Script/GameNoce.Default__NoceInventoryFunctionLibrary",
     NOCE_FUNCLIB            = "/Script/GameNoce.Default__NoceFunctionLibrary",
