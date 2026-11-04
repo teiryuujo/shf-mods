@@ -48,7 +48,8 @@ local SlotGuard   = require("game.slot_guard")
 local M = {}
 local config
 local ASK_DELAY_MS        = 100    -- let ExecuteInstantFeedback return before opening our dialog
-local USE_ANIMATION_MS    = 5000   -- the use animation takes ~1 s; after this the direct path is used
+local USE_ANIMATION_MS    = 5000   -- game time; the use animation takes ~1-2 s, after this it counts as interrupted
+local USE_WATCH_MS        = 500    -- how often that timeout is checked
 
 local pending = {}      -- pickup actor address -> { id, count, haveIt, data, asked }
 local pendingUses = {}  -- consumable id -> { used = fn, interrupted = fn(why), done } while the game's use ability runs
@@ -174,11 +175,20 @@ local function via(slot)
     return slot and string.format("from quick slot %d", slot) or "by id (no quick slot)"
 end
 
+--- World time in seconds: stops while the game is paused, starts over in a newly loaded world.
+local function gameSeconds()
+    return Util.try(function() return UEHelpers.GetGameplayStatics():GetTimeSeconds(UEHelpers.GetWorldContextObject()) end)
+end
+
 local function startAnimatedUse(inv, ps, id, slot, handlers)
     local entry = { done = false }
+    local t0, wallMs = nil, 0            -- world time at the start, wall clock counted by the watch below
     local function finish(kind, why)
         if entry.done then return end
         entry.done = true
+        local now = gameSeconds()
+        Log.dbg("%s: use ended after %s ms of game time (~%d ms wall clock)", id,
+            (t0 and now) and string.format("%.0f", (now - t0) * 1000) or "?", wallMs)
         if pendingUses[id] == entry then pendingUses[id] = nil end
         if kind == "used" then handlers.used() else Log.info("%s: use interrupted (%s), nothing changed", id, why); handlers.interrupted() end
     end
@@ -195,7 +205,24 @@ local function startAnimatedUse(inv, ps, id, slot, handlers)
     -- then the entry is already finished as interrupted and there is nothing to wait for
     if entry.done then return true end
     Log.dbg("%s: use ability started %s, waiting for UseConsumable", id, via(slot))
-    Util.later(USE_ANIMATION_MS, function() entry.interrupted("no UseConsumable within " .. USE_ANIMATION_MS .. " ms") end)
+    -- the timeout counts game time: a menu stops the animation, not the wall clock (2026-11-04 13:00:56:
+    -- a replace dialog opened during the animation ran out a wall-clock timeout, and the game used the
+    -- item a second later, after the mod had given up on it)
+    t0 = gameSeconds()
+    local function watch()
+        if entry.done then return end
+        wallMs = wallMs + USE_WATCH_MS
+        local now = gameSeconds()
+        local elapsedMs = (t0 and now) and (now - t0) * 1000 or wallMs   -- wall clock only if world time is unreadable
+        if t0 and now and now < t0 then
+            entry.interrupted("world changed (save loaded?)")
+        elseif elapsedMs >= USE_ANIMATION_MS then
+            entry.interrupted("no UseConsumable within " .. USE_ANIMATION_MS .. " ms of game time")
+        else
+            Util.later(USE_WATCH_MS, watch)
+        end
+    end
+    Util.later(USE_WATCH_MS, watch)
     return true
 end
 
