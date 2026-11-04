@@ -320,6 +320,15 @@ local function onNeedShowReplaceConsumableUI(self, OutValue)
         Util.try(function() self.NocePickupBase = nil end)
         return
     end
+    -- a stack is out for this second: a consumable taken now could merge with the unit's place or
+    -- make the put-back miss, and the replace dialog would list the inventory without that stack
+    if SlotGuard.isOut() and Inventory.pickupConsumable(self) then
+        Log.dbg("a stack is out of the inventory, ignoring this pickup")
+        Util.try(function() OutValue:set(false) end)
+        Util.try(function() self.NocePickupBase = nil end)
+        Util.later(ASK_DELAY_MS, function() if Util.valid(self) then restorePickupActor(self) end end)
+        return
+    end
     if Util.try(function() return OutValue:get() end) ~= true then return end   -- fits: vanilla pickup
     if Dialog.isOpen() then Log.dbg("a dialog is already open, leaving this pickup to the game"); return end
     if useInProgress() then Log.dbg("an item is being used right now, leaving this pickup to the game"); return end

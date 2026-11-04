@@ -47,11 +47,6 @@ local Config = {
     -- (TryToUseConsumableItem + the GA_UseShortcutItem ability); otherwise the effect is applied directly
     UseGameAnimation         = true,
 }
-local INSTANT_USE_MODES = { off = true, useful = true, always = true }
-if not INSTANT_USE_MODES[Config.InstantUse] then
-    Log.warn("Config.InstantUse = %s is not a valid value, using \"useful\"", tostring(Config.InstantUse))
-    Config.InstantUse = "useful"
-end
 
 ------------------------------------------------------------------------------
 -- Start
@@ -59,9 +54,16 @@ end
 Log.configure({ prefix = "[SHf_SmartPickup2]", debug = Config.Debug })
 Log.info("loading")
 
+local INSTANT_USE_MODES = { off = true, useful = true, always = true }
+if not INSTANT_USE_MODES[Config.InstantUse] then
+    Log.warn("Config.InstantUse = %s is not a valid value, using \"useful\"", tostring(Config.InstantUse))
+    Config.InstantUse = "useful"
+end
+
 require("features.weapon_replace").install(Config)
 require("features.durability_restore").install(Config)
 require("features.consumable_replace").install(Config)
 require("features.instant_use").install(Config)
+require("features.debug_spawn").install()   -- debug only (TESTPLAN 37b), remove before a release
 
 Hooks.start(1000, 600)

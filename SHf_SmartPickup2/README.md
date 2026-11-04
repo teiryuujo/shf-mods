@@ -79,13 +79,14 @@ shown again on every exit that leaves it on the ground (use interrupted, the new
 ## Freed consumable slot
 
 For an item that is not carried, the animated use needs it in the inventory, which is full. The mod
-takes one stack out for about a second (the only stack of its ID, outside the quick slots if possible,
-the smallest), adds the unit, lets the game use it and puts the stack back
-(`Scripts/game/slot_guard.lua`). The slot count, which is part of the save game, is not changed.
+takes all stacks of one type out for about a second (outside the quick slots if possible, the smallest
+total), adds the unit, lets the game use it and puts them back (`Scripts/game/slot_guard.lua`). A full
+inventory usually splits every type over several stacks, and removing part of a type may free no
+entry. The slot count, which is part of the save game, is not changed.
 
 The put-back compares totals, so a save loaded during the animation does not duplicate the stack.
 Should the stack not fit back, it is dropped on the ground. When no stack qualifies the effect is
-applied directly, without the animation.
+applied directly, without the animation. Other consumable pickups are ignored while the stack is out.
 
 There is no marker file, on purpose. A crash loses nothing, because the save on disk still has the
 stack. The one real loss needs a save inside that second, followed by loading that save (or a hot

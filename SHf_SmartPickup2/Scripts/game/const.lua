@@ -15,12 +15,19 @@ return {
     -- the ability that plays the item-use animation and calls UseConsumable on its notify
     USE_ABILITY_BP          = "/Game/Character/Player/Base/GameplayAbility/Ability/GA_UseShortcutItem.GA_UseShortcutItem_C",
 
-    -- where a game save can be seen (manual, automatic, temporary, the analytics handler of any slot save)
+    -- where a game save can be seen. A manual save at a save point shows only as NoceAsyncSaveGameToSlot
+    -- (measured 2026-11-01 09:23); the others are candidates until the autosave is measured, TESTPLAN 51
     SAVE_FUNCTIONS          = {
         "/Script/GameNoce.NoceSaveSubsystem:SaveGameData_BP",
         "/Script/GameNoce.NoceSaveSubsystem:AutoSaveGameData_BP",
         "/Script/GameNoce.NoceSaveSubsystem:MakeTemporarySaveGameData",
         "/Script/GameNoce.NoceAnalyticsInstance:OnSaveGameSlot",
+        "/Script/GameNoce.NoceSaveSubsystem:MakeSaveGameData",
+        "/Script/GameNoce.NoceSaveSubsystem:RequestSaveGeneralActor",
+        "/Script/GameNoce.NoceSaveSubsystem:RequestSaveSubsystem",
+        "/Script/GameNoce.AsyncActionHandleNoceStorage:NoceAsyncSaveGameToSlot",
+        "/Script/GameNoce.NoceCharacter:OnSaveRecord_BP",
+        "/Script/Engine.GameplayStatics:SaveGameToSlot",
     },
 
     -- function libraries (class default objects)
