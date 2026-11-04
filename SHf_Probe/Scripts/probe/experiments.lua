@@ -530,6 +530,37 @@ function M.addBeyondCapacity()
 end
 
 ------------------------------------------------------------------------------
+-- 14. (F6) Test helper for SHf_SmartPickup2 (TESTPLAN 37b): spawns a consumable pickup one metre in
+--     front of the player, each press the next type. One metre keeps its trigger clear of a pickup the
+--     player stands at (at 25 cm one of them loses its prompt). Like the mod's drops it is dynamic, so
+--     the save system ignores it.
+------------------------------------------------------------------------------
+local SPAWN_ITEMS    = { "MedKitB", "DrinkA", "WeaponRecoverA" }
+local SPAWN_DISTANCE = 100.0   -- cm in front of the player
+local SPAWN_FMT      = "/Game/Blueprint/InteractUnit/Pickup/Consumable/BP_Interact_Pickup_Con_%s.BP_Interact_Pickup_Con_%s_C"
+local nextSpawn = 1
+
+function M.spawnConsumable()
+    local name = SPAWN_ITEMS[nextSpawn]
+    nextSpawn = nextSpawn % #SPAWN_ITEMS + 1
+    Log.section("F6: spawn " .. name)
+    local pawn = UEHelpers.GetPlayer()
+    if not Inspect.valid(pawn) then Log.line("no player"); return end
+    local path = string.format(SPAWN_FMT, name, name)
+    local cls = StaticFindObject(path)
+    if not Inspect.valid(cls) then cls = try(function() return LoadAsset(path) end) end
+    if not Inspect.valid(cls) then Log.line("could not load %s", path); return end
+    local loc, rot, dir = pawn:K2_GetActorLocation(), pawn:K2_GetActorRotation(), pawn:GetActorForwardVector()
+    local at = { X = loc.X + dir.X * SPAWN_DISTANCE, Y = loc.Y + dir.Y * SPAWN_DISTANCE, Z = loc.Z }
+    local ok, actor = pcall(function()
+        return UEHelpers.GetWorld():SpawnActor(cls, at, { Pitch = rot.Pitch, Yaw = rot.Yaw, Roll = rot.Roll })
+    end)
+    if not ok or not Inspect.valid(actor) then Log.line("SpawnActor failed: %s", tostring(actor)); return end
+    try(function() actor.IsDynamic = true end)
+    Log.line("spawned %s at %.0f %.0f %.0f", name, at.X, at.Y, at.Z)
+end
+
+------------------------------------------------------------------------------
 -- 6. Plain inventory snapshot
 ------------------------------------------------------------------------------
 function M.snapshot()

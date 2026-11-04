@@ -1,7 +1,7 @@
 --[[
     SHf_Probe  —  read-only reconnaissance mod for SILENT HILL f (UE 5.4.2, module GameNoce, UE4SS 3.x)
 
-    The mod changes nothing in the game. It registers pre/post hooks on a declared list of
+    The mod changes nothing in the game except on F7, F12 and F6. It registers pre/post hooks on a declared list of
     functions (probe/targets.lua), logs every call with its arguments, and offers a few one-shot
     experiments on a key press (probe/experiments.lua). Every log line carries a sequence number
     and a timestamp, so the order and nesting of calls can be read back from the log.
@@ -15,7 +15,8 @@
       5. Which weapon-subsystem source returns a usable GetMaxDurability value?
 
     Output: UE4SS console + <ModDir>/probe.log (appended per session).
-    Keys:   F9 = run all experiments, F10 = log inventory snapshot + hook status.
+    Keys:   F9 = run all experiments, F10 = log inventory snapshot + hook status,
+            F7 / F12 / F6 = experiments that change state (see README).
 
     Layout:
       Scripts/main.lua              entry point, configuration
@@ -47,6 +48,7 @@ local Config = {
         Snapshot     = Key.F10,
         DirectUseTest = Key.F7,   -- AddConsumable beyond the slot capacity, then remove it again (F11 toggles fullscreen)
         SimulateUse   = Key.F12,  -- selects the slot and activates the use ability (ability system)
+        SpawnConsumable = Key.F6, -- a consumable pickup one metre ahead, for SHf_SmartPickup2 tests
     },
 }
 
@@ -75,4 +77,7 @@ RegisterKeyBind(Config.Keys.DirectUseTest, {}, function()
 end)
 RegisterKeyBind(Config.Keys.SimulateUse, {}, function()
     ExecuteInGameThread(Experiments.activateUseAbility)
+end)
+RegisterKeyBind(Config.Keys.SpawnConsumable, {}, function()
+    ExecuteInGameThread(Experiments.spawnConsumable)
 end)

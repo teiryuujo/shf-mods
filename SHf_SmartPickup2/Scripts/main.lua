@@ -64,6 +64,5 @@ require("features.weapon_replace").install(Config)
 require("features.durability_restore").install(Config)
 require("features.consumable_replace").install(Config)
 require("features.instant_use").install(Config)
-require("features.debug_spawn").install()   -- debug only (TESTPLAN 37b), remove before a release
 
 Hooks.start(1000, 600)
