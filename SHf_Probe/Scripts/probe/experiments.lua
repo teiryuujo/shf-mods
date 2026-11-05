@@ -535,7 +535,7 @@ end
 --     player stands at (at 25 cm one of them loses its prompt). Like the mod's drops it is dynamic, so
 --     the save system ignores it.
 ------------------------------------------------------------------------------
-local SPAWN_ITEMS    = { "MedKitB", "DrinkA", "WeaponRecoverA", "FoodA" }
+local SPAWN_ITEMS    = { "MedKitB", "DrinkA", "WeaponRecoverA", "FoodA", "FoodB" }
 local SPAWN_DISTANCE = 100.0   -- cm in front of the player
 local SPAWN_FMT      = "/Game/Blueprint/InteractUnit/Pickup/Consumable/BP_Interact_Pickup_Con_%s.BP_Interact_Pickup_Con_%s_C"
 local nextSpawn = 1

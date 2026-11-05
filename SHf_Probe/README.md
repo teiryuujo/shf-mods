@@ -20,7 +20,7 @@ Output goes to the UE4SS console and to `Mods\SHf_Probe\probe.log` (appended per
 | F10 | inventory snapshot + list of hooks still pending |
 | F7  | capacity experiment: one extra consumable slot, add a unit, roll back in the same tick (F11 is taken by the game's fullscreen toggle) |
 | F12 | select the first carried quick slot and run the game's use ability (`TryToUseConsumableItem` + `GA_UseShortcutItem`) |
-| F6  | spawn a consumable pickup one metre in front of the player, in turn MedKitB, DrinkA, WeaponRecoverA, FoodA (test helper for SHf_SmartPickup2, TESTPLAN 37b) |
+| F6  | spawn a consumable pickup one metre in front of the player, in turn MedKitB, DrinkA, WeaponRecoverA, FoodA, FoodB (test helper for SHf_SmartPickup2, TESTPLAN 37b) |
 
 F7, F12 and F6 change game state; everything else only reads it.
 
