@@ -1,19 +1,40 @@
 # SHf_SmartPickup2
 
-UE4SS Lua mod for SILENT HILL f. Rewrite of SHf_SmartPickup on measured game behaviour
-(see `../SHf_Probe/FINDINGS.md`), built up one feature at a time.
+UE4SS Lua mod for SILENT HILL f. It makes picking things up with a full inventory less wasteful.
+Rewrite of SHf_SmartPickup on measured game behaviour (see `../SHf_Probe/FINDINGS.md`).
 
-| # | Feature | Status |
-|---|---------|--------|
-| 1 | Weapon replace: the discarded weapon is dropped where the new one was, durability kept | implemented |
-| 2 | A dropped weapon gets its durability back when picked up again | implemented |
-| 3 | Consumable replace: the discarded stack is dropped where the new one was | implemented |
-| 4 | Consumable pickup with a full inventory: offer to use it on the spot | implemented |
+## What it does
 
-## Install
+1. **Weapon replace keeps the old weapon.** When the weapon slots are full and you replace a weapon,
+   the discarded one is dropped on the ground where the new one was, instead of being destroyed.
+2. **A dropped weapon keeps its durability.** Picking it up again restores the durability it had.
+3. **Consumable replace keeps the old stack.** When you replace a stack in a full inventory, the
+   discarded stack is dropped where the new item was, as one pickup with the whole stack.
+4. **Use it on the spot.** When the inventory is full and the item on the ground is useful right now
+   (health, sanity or stamina below maximum, a buff not active, a damaged weapon for the repair kit),
+   the game's own Yes/No pop-up asks "Inventory is full. Use <item> right now?".
+   * **Yes**: the game uses one with its usual animation, the inventory stays as it was. If you carry
+     the same item, one from the inventory is used and the new one is picked up; if you do not, the
+     one from the ground is used.
+   * **No** (or the back button): the usual replace dialog.
+   * Being hit or dodging during the animation cancels the use as in the base game: nothing is spent,
+     the item stays on the ground.
+   * Items that would do nothing right now, stacks of two or more and offerings go straight to the
+     replace dialog.
 
-Copy the folder into `SHf\Binaries\Win64\ue4ss\Mods\`, add `SHf_SmartPickup2 : 1` to `mods.txt`.
-Do not run it together with the old `SHf_SmartPickup`.
+The question is in the game's language (Russian, English and nine more).
+
+## Requirements and install
+
+* UE4SS 3.0.1 (tested with `v3.0.1 Beta #0`, git `83330635`) with the SILENT HILL f game config
+  (`MemberVariableLayout.ini` and `UE4SS-settings.ini` from `zCustomGameConfigs.zip`); without it
+  UE4SS crashes on this game.
+* Copy the `SHf_SmartPickup2` folder into `SHf\Binaries\Win64\ue4ss\Mods\` and add the line
+  `SHf_SmartPickup2 : 1` to `Mods\mods.txt`.
+* Do not run it together with the old `SHf_SmartPickup`.
+
+To remove it, delete the folder and its line in `mods.txt`. Saves made with the mod load without it:
+the mod never changes the number of consumable slots or anything else that is saved.
 
 ## Configuration
 
@@ -21,75 +42,86 @@ Do not run it together with the old `SHf_SmartPickup`.
 
 | key | default | meaning |
 |-----|---------|---------|
-| `Debug` | `true` | verbose log lines in the UE4SS console / UE4SS.log |
+| `Debug` | `true` | detailed log lines in the UE4SS console / `UE4SS.log`; useful for bug reports |
 | `DropReplacedWeapon` | `true` | feature 1 |
 | `RestoreDroppedDurability` | `true` | feature 2 |
 | `DropReplacedConsumables` | `true` | feature 3: one pickup per discarded stack |
 | `DropSpacing` | `25.0` | cm between pickups when stacks of several types are dropped at once |
-| `InstantUse` | `"useful"` | feature 4: `"off"`, `"useful"` (the game's own check via `CanUseConsumableType`; items without such a check, FoodA/FoodC, are judged by their effect classes: attribute below max or buff not active), `"always"` (effect items skip the check) |
+| `InstantUse` | `"useful"` | feature 4: `"off"`, `"useful"` (the game's own check via `CanUseConsumableType`; items without such a check, FoodA/FoodC, are judged by their effect classes: attribute below max or buff not active), `"always"` (effect items skip the check; the repair kit keeps it) |
 | `ConfirmInstantUse` | `true` | ask with the game's Yes/No pop-up; `false` uses the item silently |
 | `UseGameAnimation` | `true` | the game uses the item with its animation (the `GA_UseShortcutItem` ability; the item is selected with `TryToUseConsumableItem` when it sits in a quick slot, otherwise by writing `LastUseConsumableID`); `false` applies the effect directly |
+
+## Known limitations
+
+* **Dropped items do not last.** They are spawned by the mod and are not part of the save: they are gone
+  after loading a save, and the game also removes them at an autosave (observed on a zone transition).
+  The base game destroys them at once, so nothing is lost compared to playing without the mod.
+* **A dropped weapon lies differently** from how the original pickup lay (same place and rotation, but
+  the mesh pose differs).
+* **Restarting mods during the use animation** (UE4SS hot reload, Ctrl+R, on by default in UE4SS):
+  for an item you did not carry, one type of stack is out of the inventory for the ~2 s of the
+  animation, and the mod state that would put it back is gone. The stack comes back when you load a
+  save; the pickup hidden for the animation stays hidden until then. Not an issue in normal play.
+* Weapons the game does not let you discard (Katana, Naginata, Lantern, Kaiken, ToySaber) never open
+  the replace dialog, so the mod does not touch them.
+
+## How the use on the spot works
+
+For an item you carry, the mod selects it (quick slot or `LastUseConsumableID`) and starts the game's
+use ability; the game plays the animation, applies the effect and removes one unit, then the mod picks
+the new one up. While the animation runs, the pickup is hidden the way the game hides pickups
+(`HideMe` / `ShowMe` in `BP_Interact_Pickup`) and other pickups are left to the game.
+
+For an item you do not carry, the use ability needs it in the inventory, which is full. The mod takes
+all stacks of one type out for the animation (a type outside the quick slots if possible, the smallest
+total), adds the unit, lets the game use it and puts the stacks back (`Scripts/game/slot_guard.lua`).
+The slot count, which is part of the save game, is never changed. The put-back compares totals, so a
+save loaded during the animation does not duplicate anything; should a stack not fit back, it is dropped
+on the ground. Consumable pickups are ignored while a stack is out.
+
+The wait for the animation counts game time, so a pause or a menu during it changes nothing. If the game
+refuses to start the ability (another use still running), the effect is applied directly and the log
+says so with a WARN.
+
+Every save to disk is logged (`game save: NoceAsyncSaveGameToSlot`, manual and autosave alike). A save
+that happens while a stack is out gives a WARN `game save (...) while N x <item> is out of the
+inventory`: that save lacks the stack. It needs the save to land in the ~2 s of the animation and was
+never observed.
+
+Log lines are prefixed with `[SHf_SmartPickup2]`; WARN lines are worth reporting.
 
 ## Layout
 
 ```
-Scripts/main.lua               configuration, wiring
-Scripts/core/log.lua           logger
-Scripts/core/util.lua          Try / Valid / array helpers / actor helpers
-Scripts/core/hooks.lua         one RegisterHook per function, many handlers, retry until the class loads
-Scripts/game/const.lua         object paths
-Scripts/game/inventory.lua     inventory access, weapon slot snapshots and diffs
-Scripts/game/spawn.lua         class loading, spawning interactables
-Scripts/game/drops.lua         registry of pickups spawned by the mod
-Scripts/game/pickup_watch.lua  snapshots the weapon slots around every pickup, notifies listeners of the diff
-Scripts/features/*.lua         one module per feature, `install(config)`
+Scripts/main.lua                    configuration, wiring
+Scripts/core/log.lua                logger
+Scripts/core/util.lua               try / valid / array helpers / actor helpers
+Scripts/core/hooks.lua              one RegisterHook per function, many handlers, retry until the class loads
+Scripts/game/const.lua              object paths, the save functions that are watched
+Scripts/game/inventory.lua          inventory access, weapon slot snapshots and diffs
+Scripts/game/consumables.lua        consumable data, usefulness, effects, repair, quick slots, the use ability
+Scripts/game/slot_guard.lua         takes a stack out for a use and puts it back; watches game saves
+Scripts/game/dialog.lua             the game's Yes/No pop-up
+Scripts/game/texts.lua              the question in the game's language
+Scripts/game/spawn.lua              class loading, spawning interactables
+Scripts/game/drops.lua              registry of pickups spawned by the mod
+Scripts/game/pickup_watch.lua       snapshots around every pickup, notifies listeners of the diff
+Scripts/features/weapon_replace.lua      feature 1
+Scripts/features/durability_restore.lua  feature 2
+Scripts/features/consumable_replace.lua  feature 3
+Scripts/features/instant_use.lua         feature 4
+TESTPLAN.md                         in-game test plan and results (Russian)
 ```
-
-Log lines are prefixed with `[SHf_SmartPickup2]`.
 
 ## Backlog
 
-* Dropped pickups reuse the location and rotation of the interactable they replace, yet the mesh lies
-  differently (confirmed in game). Lead: the game itself poses the mesh through the relative transform
-  of the `PickupClass` child-actor component (`BP_Interact_Pickup_Exchange_Base` applies
-  `OverrideExchangeRelativeTransform` with `K2_SetRelativeTransform` on it). Read that transform from
-  the original interactable at pickup time and apply it to the spawned one.
-* Instant use of a stack on the ground (x2 and more, e.g. a stack this mod dropped): currently always
-  the replace dialog. Ideas: show how many units the pickup holds; offer to use one unit and pick up
-  the rest (the pickup's `Count` is writable, see `game/drops.lua`).
-* Feature 5 idea: discarding a weapon from the inventory (`NocePlayerInventoryComponent:DiscardWeapon`,
-  called by the inventory UI, hookable with real pre/post) currently destroys it. Drop it at the
-  player's feet instead, with its durability, through the same `game/drops.lua` registry.
-* Items without a quick slot (Capsule, DrinkC, FoodB, FoodC with the default layout) get the
-  animation by writing `LastUseConsumableID` directly (`Consumables.useById`): the use ability reads
-  only that field. If the write does not take, the log says so and the effect is applied directly as
-  before. `EquipConsumable(ID, slot)` / `UnequipConsumable(slot)` remain the fallback plan.
-* Mods restarted (UE4SS hot reload, Ctrl+R, on by default in UE4SS) while the use animation runs:
-  the pickup hidden for the animation (`hidePickup`) is never shown again and the stack taken out by
-  the slot guard is not put back, since the module state that would do it is gone. Suspected, not
-  observed — see TESTPLAN 38b. Accepted for the stack (see "Freed consumable slot"). For the pickup:
-  showing every hidden pickup would also reveal the ones the game hid itself (`HideMe`).
-
-## Pickup during the animation
-
-While the game's use animation runs the pickup is hidden the way the game itself hides pickups
-(`HideMe` / `ShowMe` in `BP_Interact_Pickup`): trigger box off, actor hidden, hint areas off. It is
-shown again on every exit that leaves it on the ground (use interrupted, the new one does not fit).
-
-## Freed consumable slot
-
-For an item that is not carried, the animated use needs it in the inventory, which is full. The mod
-takes all stacks of one type out for about a second (outside the quick slots if possible, the smallest
-total), adds the unit, lets the game use it and puts them back (`Scripts/game/slot_guard.lua`). A full
-inventory usually splits every type over several stacks, and removing part of a type may free no
-entry. The slot count, which is part of the save game, is not changed.
-
-The put-back compares totals, so a save loaded during the animation does not duplicate the stack.
-Should the stack not fit back, it is dropped on the ground. When no stack qualifies the effect is
-applied directly, without the animation. Other consumable pickups are ignored while the stack is out.
-
-There is no marker file, on purpose. A crash loses nothing, because the save on disk still has the
-stack. The one real loss needs a save inside that second, followed by loading that save (or a hot
-reload of the mods during the animation). Every game save is logged (`game save: ...` at debug level),
-and one that hits this window gives a WARN `game save (...) while N x <item> is out of the inventory`.
-If that shows up in real play, a marker can be added then.
+* Find out what removes dropped pickups at an autosave (hook the destruction of a spawned actor and log
+  the caller); if it is a cleanup of dynamic actors, the drops may be kept.
+* Dropped weapon pose: the game poses the mesh through the relative transform of the `PickupClass`
+  child-actor component (`BP_Interact_Pickup_Exchange_Base` applies `OverrideExchangeRelativeTransform`
+  with `K2_SetRelativeTransform`). Read that transform from the original interactable at pickup time
+  and apply it to the spawned one.
+* Instant use of a stack on the ground (x2 and more): currently always the replace dialog. Idea: offer
+  to use one unit and pick up the rest (the pickup's `Count` is writable, see `game/drops.lua`).
+* Discarding a weapon from the inventory (`NocePlayerInventoryComponent:DiscardWeapon`, hookable with
+  real pre/post) destroys it. Drop it at the player's feet instead, through `game/drops.lua`.

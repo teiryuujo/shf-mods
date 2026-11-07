@@ -2,7 +2,7 @@
     SHf_SmartPickup2  —  UE4SS Lua mod for SILENT HILL f (UE 5.4.2, module GameNoce, UE4SS 3.x)
 
     Rewrite of SHf_SmartPickup on top of the behaviour measured with SHf_Probe
-    (see ../SHf_Probe/FINDINGS.md). Features are enabled one at a time:
+    (see ../SHf_Probe/FINDINGS.md). Features (README.md has the details and the known limitations):
 
       1. Weapon replace with full weapon slots: the discarded weapon is dropped on the ground
          where the new one was, keeping its durability.                      features/weapon_replace.lua
@@ -21,7 +21,8 @@
 
     Layout:
       core/     log, util, hooks        game-agnostic, reusable
-      game/     const, inventory, spawn, drops   access to this game's objects
+      game/     access to this game's objects: const, inventory, consumables, slot_guard, dialog,
+                texts, spawn, drops, pickup_watch
       features/ one module per feature, each exposes install(config)
 --]]
 
@@ -35,7 +36,7 @@ local Hooks = require("core.hooks")
 -- Configuration
 ------------------------------------------------------------------------------
 local Config = {
-    Debug                    = true,   -- verbose log lines (inventory snapshots, hook registration)
+    Debug                    = true,   -- detailed log lines (inventory snapshots, decisions); kept on for bug reports
     DropReplacedWeapon       = true,   -- feature 1
     RestoreDroppedDurability = true,   -- feature 2
     DropReplacedConsumables  = true,   -- feature 3: one pickup per discarded stack
@@ -43,8 +44,8 @@ local Config = {
     -- feature 4: "off" | "useful" (the game's own usefulness check) | "always" (skip it for effect items)
     InstantUse               = "useful",
     ConfirmInstantUse        = true,   -- ask with the game's Yes/No pop-up first; false = use silently
-    -- let the game use the item with its animation (quick slot or not); false applies the effect directly
-    -- (TryToUseConsumableItem + the GA_UseShortcutItem ability); otherwise the effect is applied directly
+    -- let the game use the item with its animation (the GA_UseShortcutItem ability, quick slot or not);
+    -- false applies the effect directly
     UseGameAnimation         = true,
 }
 
