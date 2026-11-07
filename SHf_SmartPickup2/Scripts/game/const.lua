@@ -15,18 +15,17 @@ return {
     -- the ability that plays the item-use animation and calls UseConsumable on its notify
     USE_ABILITY_BP          = "/Game/Character/Player/Base/GameplayAbility/Ability/GA_UseShortcutItem.GA_UseShortcutItem_C",
 
-    -- where a game save can be seen. A manual save at a save point shows only as NoceAsyncSaveGameToSlot
-    -- (measured 2026-11-01 09:23); the others are candidates until the autosave is measured, TESTPLAN 51
+    -- where a game save to disk can be seen. Measured: the manual save at a save point and the autosave
+    -- both show only as NoceAsyncSaveGameToSlot (2026-11-01 09:23, 2026-11-08 00:29 and 00:43). The
+    -- others never fired and stay as cheap fallbacks for save paths not measured (chapter end, etc.).
+    -- Left out on purpose: RequestSaveGeneralActor fires every few seconds and after a level pickup
+    -- without writing anything to disk (TESTPLAN 51), and the other in-memory steps (MakeSaveGameData,
+    -- MakeTemporarySaveGameData, RequestSaveSubsystem, OnSaveRecord_BP) would give the same false WARN.
     SAVE_FUNCTIONS          = {
+        "/Script/GameNoce.AsyncActionHandleNoceStorage:NoceAsyncSaveGameToSlot",
         "/Script/GameNoce.NoceSaveSubsystem:SaveGameData_BP",
         "/Script/GameNoce.NoceSaveSubsystem:AutoSaveGameData_BP",
-        "/Script/GameNoce.NoceSaveSubsystem:MakeTemporarySaveGameData",
         "/Script/GameNoce.NoceAnalyticsInstance:OnSaveGameSlot",
-        "/Script/GameNoce.NoceSaveSubsystem:MakeSaveGameData",
-        "/Script/GameNoce.NoceSaveSubsystem:RequestSaveGeneralActor",
-        "/Script/GameNoce.NoceSaveSubsystem:RequestSaveSubsystem",
-        "/Script/GameNoce.AsyncActionHandleNoceStorage:NoceAsyncSaveGameToSlot",
-        "/Script/GameNoce.NoceCharacter:OnSaveRecord_BP",
         "/Script/Engine.GameplayStatics:SaveGameToSlot",
     },
 
