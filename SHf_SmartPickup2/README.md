@@ -114,7 +114,7 @@ Scripts/features/weapon_replace.lua      feature 1
 Scripts/features/durability_restore.lua  feature 2
 Scripts/features/consumable_replace.lua  feature 3
 Scripts/features/instant_use.lua         feature 4
-TESTPLAN.md                         in-game test plan and results (Russian)
+TESTPLAN.md                         in-game test plan and results (Russian; in the repository, not in the release archive)
 ```
 
 ## Backlog
