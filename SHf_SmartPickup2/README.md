@@ -60,8 +60,10 @@ the mod never changes the number of consumable slots or anything else that is sa
   the mesh pose differs).
 * **Restarting mods during the use animation** (UE4SS hot reload, Ctrl+R, on by default in UE4SS):
   for an item you did not carry, one type of stack is out of the inventory for the ~2 s of the
-  animation, and the mod state that would put it back is gone. The stack comes back when you load a
-  save; the pickup hidden for the animation stays hidden until then. Not an issue in normal play.
+  animation, and the mod state that would put it back is gone, so those items are missing afterwards.
+  **Load your last save without saving first**: the save on disk still has them. Saving before that
+  writes the inventory without them for good (seen in testing: two med kits lost this way). Not an
+  issue in normal play, only when pressing Ctrl+R in the middle of a use.
 * Weapons the game does not let you discard (Katana, Naginata, Lantern, Kaiken, ToySaber) never open
   the replace dialog, so the mod does not touch them.
 
@@ -115,6 +117,9 @@ TESTPLAN.md                         in-game test plan and results (Russian)
 
 ## Backlog
 
+* Survive a mod restart (Ctrl+R) during case B: write what was taken out to a marker file before the
+  take-out, delete it after the put-back; on start, put back what a leftover marker names if the
+  inventory lacks it. Today the player has to reload without saving (see Known limitations).
 * Find out what removes dropped pickups at an autosave (hook the destruction of a spawned actor and log
   the caller); if it is a cleanup of dynamic actors, the drops may be kept.
 * Dropped weapon pose: the game poses the mesh through the relative transform of the `PickupClass`
