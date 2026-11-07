@@ -124,15 +124,15 @@
 
 | # | S | настройка | что прогнать | ожидание | статус | когда | заметки |
 |---|---|-----------|--------------|----------|--------|-------|---------|
-| 43 | | `DropReplacedWeapon = false` | 1 | на старте `feature 1 (drop replaced weapon) is disabled`; при замене оружие исчезает как в ваниле; остальные функции работают | ⬜ | | |
+| 43 | | `DropReplacedWeapon = false` | 1 | на старте `feature 1 (drop replaced weapon) is disabled`; при замене оружие исчезает как в ваниле; остальные функции работают | ✅ | 2026-11-08 01:57 | RC1 через Ctrl+R (прогон 1 вместе с 45, 49): `feature 1 (drop replaced weapon) is disabled`; 01:57:00 топор заменил биту в слоте 0, бита исчезла, `Dropped weapon` нет. Попутно: подобранный топор был выброшен модом до Ctrl+R (135) и вернулся с полной прочностью 360 — реестр выброшенного после Ctrl+R пуст, как после загрузки. |
 | 44 | | `RestoreDroppedDurability = false` | 1, 5 | `feature 2 ... is disabled`; оружие выбрасывается, но при повторном подборе прочность полная, строки `Restored` нет | ⬜ | | |
-| 45 | | `DropReplacedConsumables = false` | 8 | `feature 3 ... is disabled`; заменённая стопка исчезает как в ваниле; мгновенное использование работает | ⬜ | | |
+| 45 | | `DropReplacedConsumables = false` | 8 | `feature 3 ... is disabled`; заменённая стопка исчезает как в ваниле; мгновенное использование работает | ✅ | 2026-11-08 01:57 | RC1 через Ctrl+R: `feature 3 (drop replaced consumables) is disabled`; 01:57:32 DrinkA после «Нет» заменил стопку MedKitB=1, стопка исчезла, `Dropped` нет. Мгновенное использование работает (01:57:49 случай B, см. 49). |
 | 23 | | `InstantUse = "always"` | 17, 18, 34 | бинт при полном здоровье предлагается; ремкомплект при целом оружии — нет | ⬜ | | |
 | 24 | | `InstantUse = "off"` | 12, 14b | `feature 4 (instant use) is off`; ни одного вопроса, всё по-ванильному | ⬜ | | |
 | 46 | | `UseGameAnimation = false` | 12, 14b, 21, 35 | без анимации: A — `<id>: N/N effects applied`, `picked the new one up`; B — `Used <id> directly on pickup`; стопка не вынимается; повторное нажатие во время вопроса не открывает второй | ⬜ | | хуки `UseConsumable` и `K2_OnEndAbility` в этом режиме не ставятся |
 | 47 | | `ConfirmInstantUse = false` | 12, 14b, 17 | вопроса нет, предмет сразу используется с анимацией; бесполезный — меню замены | ⬜ | | |
 | 48 | | `ConfirmInstantUse = false`, `UseGameAnimation = false` | 12, 14b | без вопроса и без анимации, эффекты применены, пикап обработан | ⬜ | | |
-| 49 | | `InstantUse = "abc"` (неверное значение) | старт | `[SHf_SmartPickup2] WARN Config.InstantUse = abc is not a valid value, using "useful"` после строки `loading`; дальше как по умолчанию | ⬜ | | намеренный WARN |
+| 49 | | `InstantUse = "abc"` (неверное значение) | старт | `[SHf_SmartPickup2] WARN Config.InstantUse = abc is not a valid value, using "useful"` после строки `loading`; дальше как по умолчанию | ✅ | 2026-11-08 01:57 | RC1 через Ctrl+R: сразу после `loading` — `WARN Config.InstantUse = abc is not a valid value, using "useful"`, `feature 4 (instant use, mode useful, ...)`; 01:57:16 DrinkA при полном рассудке — меню замены, 01:57:47 аптечка — вопрос, «Да», случай B (`4 x FoodD taken out` / `back`). Ранее: намеренный WARN |
 | 50 | | `Debug = false` | дымовой набор | всё работает так же; в логе только строки без `dbg` | ☑ | 2026-11-08 | закрыто без прогона: релиз идёт с `Debug = true` (решение 2026-11-08: подробный лог нужен для разбора отчётов игроков), режим `false` выпускаться не будет. Логика от `Debug` не зависит: он только включает строки `dbg` в `Log.dbg`. Ранее: весь остальной план проверяется по строкам `dbg` |
 
 ## Релиз

@@ -58,6 +58,8 @@ the mod never changes the number of consumable slots or anything else that is sa
   The base game destroys them at once, so nothing is lost compared to playing without the mod.
 * **A dropped weapon lies differently** from how the original pickup lay (same place and rotation, but
   the mesh pose differs).
+* After Ctrl+R, weapons dropped before it come back at full durability when picked up: the mod's record
+  of them is gone, as after loading a save.
 * **Restarting mods during the use animation** (UE4SS hot reload, Ctrl+R, on by default in UE4SS):
   for an item you did not carry, one type of stack is out of the inventory for the ~2 s of the
   animation, and the mod state that would put it back is gone, so those items are missing afterwards.
