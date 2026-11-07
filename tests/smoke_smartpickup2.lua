@@ -422,6 +422,21 @@ assert(logged("WARN MedKitB: the game's use ability could not be started, consum
 callsAre("UpdatePickupClass,UpdatePickupClass,HandlePickupSuccess", "step 11e")
 abilityMode = "use"
 
+-- 11f. a second press right after a pickup was used up (HandlePickupSuccess only schedules the
+--      destruction): no new question, nothing used again (measured 2026-11-08 02:24:16: repaired twice)
+calls = {}
+fullInventory()
+local pD2 = instantPickup("MedKitB")
+interact(pD2)
+callsAre("UpdatePickupClass,UpdatePickupClass,HandlePickupSuccess", "step 11f")
+local activationsBefore11f, dialogsBefore11f = abilityActivations, dialogs
+calls = {}
+pD2.NocePickupBase = "child"
+local outLate = interact(pD2)
+assert(outLate.value() == false and pD2.NocePickupBase == nil, "step 11f: a late interaction must be swallowed")
+assert(abilityActivations == activationsBefore11f and dialogs == dialogsBefore11f and #calls == 0, "step 11f: nothing asked or used again")
+assert(inventoryKey() == FULL, "step 11f: the inventory must be as before, was " .. inventoryKey())
+
 -- 12. not useful right now -> OutValue untouched, nothing happens
 calls, usefulNow = {}, false
 local pC = instantPickup("MedKitB")

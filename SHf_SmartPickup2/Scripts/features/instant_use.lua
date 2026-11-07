@@ -53,6 +53,12 @@ local USE_WATCH_MS        = 500    -- how often that timeout is checked
 
 local pending = {}      -- pickup actor address -> { id, count, haveIt, data, asked }
 local pendingUses = {}  -- consumable id -> { used = fn, interrupted = fn(why), done } while the game's use ability runs
+-- pickup actor address -> full name, for a moment after a successful pickup. HandlePickupSuccess only
+-- schedules the destruction (PrepareToDestroy), and releasePickup has just put the actor back in order,
+-- so an interaction right after it would start over on an item already used: measured 2026-11-08
+-- 02:24:16, a second press 0.1 s after "Used WeaponRecoverA directly" asked again and repaired twice.
+local taken = {}
+local TAKEN_MS = 3000
 
 local function restorePickupActor(self)
     Util.try(function() self:UpdatePickupClass() end)           -- re-caches NocePickupBase from the child actor
@@ -341,6 +347,12 @@ end
 
 local function onNeedShowReplaceConsumableUI(self, OutValue)
     local addr = self:GetAddress()
+    if taken[addr] and taken[addr] == Util.try(function() return self:GetFullName() end) then
+        Log.dbg("this pickup was just taken, ignoring a late interaction")
+        Util.try(function() OutValue:set(false) end)
+        Util.try(function() self.NocePickupBase = nil end)
+        return
+    end
     if pending[addr] then
         -- the player interacted again while our question is pending: keep the Blueprint idle
         Util.try(function() OutValue:set(false) end)
@@ -390,7 +402,12 @@ local function onShowReplaceConsumableUI(self)
 end
 
 local function onHandlePickupSuccess(self)
-    pending[self:GetAddress()] = nil
+    local addr = self:GetAddress()
+    pending[addr] = nil
+    local name = Util.try(function() return self:GetFullName() end)
+    if not name then return end
+    taken[addr] = name
+    Util.later(TAKEN_MS, function() if taken[addr] == name then taken[addr] = nil end end)
 end
 
 --- The game consumed an item (quick slot, inventory UI or our ability run): wake the pending use, if any.
