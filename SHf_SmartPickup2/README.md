@@ -69,6 +69,21 @@ the mod never changes the number of consumable slots or anything else that is sa
 * Weapons the game does not let you discard (Katana, Naginata, Lantern, Kaiken, ToySaber) never open
   the replace dialog, so the mod does not touch them.
 
+## Testing and compatibility
+
+Tested in game on one save, in short sessions aimed at each
+feature, setting and edge case: replace dialogs, the use on the spot with and without the animation,
+interruptions, pausing, saving and loading during the use, an autosave on a zone transition, Russian and
+English. The test plan with every result is kept in the repository (`TESTPLAN.md`, in Russian).
+**Not tested: a long ordinary playthrough.** If something goes wrong in normal play, the log lines
+prefixed `[SHf_SmartPickup2]` (in `UE4SS.log`) show what the mod did.
+
+Other mods: the mod reads slot counts, stack sizes and durability maxima from the game, nothing is
+hard-coded, so mods that change those values (bigger stacks, more inventory slots, higher weapon
+durability, infinite stamina) should not conflict; with a big enough inventory this mod simply has little
+to do. Not tested together with any of them. Mods that change the pickup or replace dialogs themselves
+may conflict.
+
 ## How the use on the spot works
 
 For an item you carry, the mod selects it (quick slot or `LastUseConsumableID`) and starts the game's
