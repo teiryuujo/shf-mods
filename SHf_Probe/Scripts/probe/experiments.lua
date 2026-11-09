@@ -530,7 +530,7 @@ function M.addBeyondCapacity()
 end
 
 ------------------------------------------------------------------------------
--- 14. (F6) Test helper for SHf_SmartPickup2 (TESTPLAN 37b): spawns a consumable pickup one metre in
+-- 14. (F6) Test helper for SHf_SmartPickup (TESTPLAN 37b): spawns a consumable pickup one metre in
 --     front of the player, each press the next type. One metre keeps its trigger clear of a pickup the
 --     player stands at (at 25 cm one of them loses its prompt). Like the mod's drops it is dynamic, so
 --     the save system ignores it.

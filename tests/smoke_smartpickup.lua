@@ -1,6 +1,6 @@
--- Smoke test for SHf_SmartPickup2 under plain Lua 5.4: stubs the UE4SS globals, loads the mod,
+-- Smoke test for SHf_SmartPickup under plain Lua 5.4: stubs the UE4SS globals, loads the mod,
 -- then replays the measured pickup flows against a fake inventory.
--- Run from the mod's Scripts directory:  ../../../tools/lua/lua54.exe ../../tests/smoke_smartpickup2.lua
+-- Run from the mod's Scripts directory:  ../../../tools/lua/lua54.exe ../../tests/smoke_smartpickup.lua
 
 local hooks = {}
 RegisterHook = function(fn, pre, post) hooks[fn] = { pre = pre, post = post } end

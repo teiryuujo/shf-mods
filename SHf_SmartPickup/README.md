@@ -1,7 +1,7 @@
-# SHf_SmartPickup2
+# SHf_SmartPickup
 
 UE4SS Lua mod for SILENT HILL f. It makes picking things up with a full inventory less wasteful.
-Rewrite of SHf_SmartPickup on measured game behaviour (see `../SHf_Probe/FINDINGS.md`).
+Rewrite of the first SmartPickup (kept as `SHf_SmartPickup_Legacy` in the repository) on measured game behaviour (see `../SHf_Probe/FINDINGS.md`).
 
 ## What it does
 
@@ -29,9 +29,10 @@ The question is in the game's language (Russian, English and nine more).
 * UE4SS 3.0.1 (tested with `v3.0.1 Beta #0`, git `83330635`) with the SILENT HILL f game config
   (`MemberVariableLayout.ini` and `UE4SS-settings.ini` from `zCustomGameConfigs.zip`); without it
   UE4SS crashes on this game.
-* Copy the `SHf_SmartPickup2` folder into `SHf\Binaries\Win64\ue4ss\Mods\` and add the line
-  `SHf_SmartPickup2 : 1` to `Mods\mods.txt`.
-* Do not run it together with the old `SHf_SmartPickup`.
+* Copy the `SHf_SmartPickup` folder into `SHf\Binaries\Win64\ue4ss\Mods\` and add the line
+  `SHf_SmartPickup : 1` to `Mods\mods.txt`.
+* If a test build is installed as `SHf_SmartPickup2`, delete that folder and its line in `mods.txt`:
+  it is an earlier version of this mod and must not run next to it.
 
 To remove it, delete the folder and its line in `mods.txt`. Saves made with the mod load without it:
 the mod never changes the number of consumable slots or anything else that is saved.
@@ -76,7 +77,7 @@ feature, setting and edge case: replace dialogs, the use on the spot with and wi
 interruptions, pausing, saving and loading during the use, an autosave on a zone transition, Russian and
 English. The test plan with every result is kept in the repository (`TESTPLAN.md`, in Russian).
 **Not tested: a long ordinary playthrough.** If something goes wrong in normal play, the log lines
-prefixed `[SHf_SmartPickup2]` (in `UE4SS.log`) show what the mod did.
+prefixed `[SHf_SmartPickup]` (in `UE4SS.log`) show what the mod did.
 
 Other mods: the mod reads slot counts, stack sizes and durability maxima from the game, nothing is
 hard-coded, so mods that change those values (bigger stacks, more inventory slots, higher weapon
@@ -107,7 +108,7 @@ that happens while a stack is out gives a WARN `game save (...) while N x <item>
 inventory`: that save lacks the stack. It needs the save to land in the ~2 s of the animation and was
 never observed.
 
-Log lines are prefixed with `[SHf_SmartPickup2]`; WARN lines are worth reporting.
+Log lines are prefixed with `[SHf_SmartPickup]`; WARN lines are worth reporting.
 
 ## Layout
 

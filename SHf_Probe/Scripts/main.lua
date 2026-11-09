@@ -48,7 +48,7 @@ local Config = {
         Snapshot     = Key.F10,
         DirectUseTest = Key.F7,   -- AddConsumable beyond the slot capacity, then remove it again (F11 toggles fullscreen)
         SimulateUse   = Key.F12,  -- selects the slot and activates the use ability (ability system)
-        SpawnConsumable = Key.F6, -- a consumable pickup one metre ahead, for SHf_SmartPickup2 tests
+        SpawnConsumable = Key.F6, -- a consumable pickup one metre ahead, for SHf_SmartPickup tests
     },
 }
 
